@@ -24,8 +24,12 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository }}
+          # This section handles the automatic tagging
+          tags: |
+            type=ref,event=tag
+            type=raw,value=latest,enable=${{ github.ref_type == 'tag' }}
           labels: |
-            org.opencontainers.image.authors=thesmoothener
+            org.opencontainers.image.authors=cooper8386
 
       - name: Build and push
         uses: docker/build-push-action@v5
