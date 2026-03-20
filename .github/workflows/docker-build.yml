@@ -2,17 +2,20 @@ name: Shared Docker Build
 on:
   workflow_call:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true # Fixes the Node.js deprecation warning
+
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
+      packages: write # Explicitly grants write access to this job
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Log in to GHCR
+      - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -25,19 +28,16 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
-            # Tag with the version (v1.0.0) when a tag is pushed
             type=ref,event=tag
-            # Update 'latest' ONLY when a version tag is pushed
             type=raw,value=latest,enable=${{ github.ref_type == 'tag' }}
-            # Update a 'dev' tag whenever code is pushed to the dev branch
             type=raw,value=dev,enable=${{ github.ref == 'refs/heads/dev' }}
           labels: |
             org.opencontainers.image.authors=Cooper8386
 
-      - name: Build and push
+      - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ id.meta.outputs.tags }}
+          labels: ${{ id.meta.outputs.labels }}
