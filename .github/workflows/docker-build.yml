@@ -24,12 +24,15 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository }}
-          # This section handles the automatic tagging
           tags: |
+            # Tag with the version (v1.0.0) when a tag is pushed
             type=ref,event=tag
+            # Update 'latest' ONLY when a version tag is pushed
             type=raw,value=latest,enable=${{ github.ref_type == 'tag' }}
+            # Update a 'dev' tag whenever code is pushed to the dev branch
+            type=raw,value=dev,enable=${{ github.ref == 'refs/heads/dev' }}
           labels: |
-            org.opencontainers.image.authors=cooper8386
+            org.opencontainers.image.authors=Cooper8386
 
       - name: Build and push
         uses: docker/build-push-action@v5
